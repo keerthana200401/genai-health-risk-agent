@@ -1,0 +1,9 @@
+streamlit
+pandas
+python-dotenv
+crewai
+crewai-tools
+litellm
+fastapi
+uvicorn
+pydantic
