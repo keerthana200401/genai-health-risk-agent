@@ -1,7 +1,6 @@
 import streamlit as st
 from dotenv import load_dotenv
-
-from crew.health_crew import build_health_crew
+from graph.health_graph import build_health_graph
 from utils.data_loader import load_cardio_data, row_to_patient_data
 from utils.rules import generate_risk_flags
 from utils.formatter import split_output_sections, alert_emoji
@@ -198,24 +197,29 @@ def apply_safe_fallbacks(sections, grounded_flags):
 if st.button("Run Clinical Alert Analysis", type="primary"):
     try:
         with st.spinner("Running multi-agent clinical reasoning..."):
-            crew = build_health_crew(patient_data)
-            result = crew.kickoff()
+            graph = build_health_graph()
+            graph_result = graph.invoke({
+                "patient_data": patient_data,
+                "grounded_flags": grounded_flags,
+                "rag_context": "",
+                "risk_level": "",
+                "crew_result": None
+            })
+            result = graph_result["crew_result"]
 
-        if hasattr(result, "tasks_output") and result.tasks_output:
-            task_texts = []
+            if hasattr(result, "tasks_output") and result.tasks_output:
+                task_texts = []
+                for task_output in result.tasks_output:
+                    if hasattr(task_output, "raw"):
+                        task_texts.append(task_output.raw)
+                    else:
+                        task_texts.append(str(task_output))
+                full_text = "\n\n".join(task_texts)
+            else:
+                full_text = result.raw if hasattr(result, "raw") else str(result)
 
-            for task_output in result.tasks_output:
-                if hasattr(task_output, "raw"):
-                    task_texts.append(task_output.raw)
-                else:
-                    task_texts.append(str(task_output))
-
-            full_text = "\n\n".join(task_texts)
-        else:
-            full_text = result.raw if hasattr(result, "raw") else str(result)
-
-        sections = split_output_sections(full_text)
-        sections = apply_safe_fallbacks(sections, grounded_flags)
+            sections = split_output_sections(full_text)
+            sections = apply_safe_fallbacks(sections, grounded_flags)
 
         st.divider()
         st.subheader("AI Clinical Alert Output")
