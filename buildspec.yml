@@ -4,14 +4,14 @@ phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 877500087308.dkr.ecr.us-east-1.amazonaws.com
+      - aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 877500087308.dkr.ecr.us-east-2.amazonaws.com
   build:
     commands:
       - echo Building Docker image...
       - docker build -t genai-health-risk-agent .
-      - docker tag genai-health-risk-agent:latest 877500087308.dkr.ecr.us-east-1.amazonaws.com/genai-health-risk-agent:latest
+      - docker tag genai-health-risk-agent:latest 877500087308.dkr.ecr.us-east-2.amazonaws.com/genai-health-risk-agent:latest
   post_build:
     commands:
       - echo Pushing image to ECR...
-      - docker push 877500087308.dkr.ecr.us-east-1.amazonaws.com/genai-health-risk-agent:latest
+      - docker push 877500087308.dkr.ecr.us-east-2.amazonaws.com/genai-health-risk-agent:latest
       - echo Build complete!
